@@ -90,6 +90,21 @@ SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
+Create a `merchants` table in Supabase SQL editor:
+
+```sql
+create table merchants (
+  id uuid primary key default uuid_generate_v4(),
+  business_name text not null,
+  business_type text not null,
+  mcc_code text not null,
+  full_name text not null,
+  email text not null,
+  phone text not null,
+  created_at timestamp default now()
+);
+```
+
 ---
 
 ### Run Backend Server
