@@ -1,4 +1,4 @@
-import { Merchant } from "@/lib/api";
+import type { Merchant } from "@/types/merchant";
 
 export default function MerchantList({ data }: { data: Merchant[] }) {
   return (

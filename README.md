@@ -203,7 +203,6 @@ merchant-onboarding/
 │
 ├── backend/
 │ ├── app/
-│ ├── venv/
 │ └── requirements.txt
 │
 ├── frontend/
@@ -211,6 +210,9 @@ merchant-onboarding/
 │ ├── components/
 │ ├── hooks/
 │ ├── lib/
+│ ├── types/
+│ │   ├── merchant.ts
+│ │   └── onboarding.ts
 │ └── package.json
 │
 └── README.md
