@@ -1,7 +1,9 @@
-export default function MerchantList({ data }: any) {
+import { Merchant } from "@/lib/api";
+
+export default function MerchantList({ data }: { data: Merchant[] }) {
   return (
     <div className="grid gap-4">
-      {data?.map((m: any) => (
+      {data.map((m) => (
         <div
           key={m.id}
           className="bg-white p-5 rounded-xl shadow hover:shadow-md transition"

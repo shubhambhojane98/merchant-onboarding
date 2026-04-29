@@ -7,6 +7,8 @@ import Step1 from "@/components/onboarding/Step1";
 import Step2 from "@/components/onboarding/Step2";
 import Step3 from "@/components/onboarding/Step3";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
+import { createMerchant } from "@/lib/api";
+import type { MerchantInput } from "@/types/merchant";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -24,26 +26,32 @@ export default function OnboardingPage() {
   } = useOnboardingForm();
 
   const submit = async () => {
-    setLoading(true);
-    setErrors({});
-
     try {
-      const res = await fetch("http://localhost:8000/merchants", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      setLoading(true);
+      setErrors({});
+      console.log("B", formData.business_type);
 
-      const data = await res.json();
+      // ✅ runtime validation (important)
+      if (!formData.business_type) {
+        toast.error("Business type is required");
+        return;
+      }
 
-      if (!res.ok) throw new Error(data.detail);
+      // ✅ type-safe payload
+      const payload: MerchantInput = {
+        ...formData,
+        business_type: formData.business_type,
+      };
+
+      await createMerchant(payload);
 
       toast.success("Merchant Created 🎉");
       router.push("/merchants");
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create merchant";
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }

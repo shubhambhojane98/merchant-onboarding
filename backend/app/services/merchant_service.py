@@ -1,42 +1,54 @@
 from app.db.supabase_client import supabase
+from app.models.merchant import MerchantCreate, Merchant
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def create_merchant(data: dict):
+def create_merchant(payload: MerchantCreate) -> Merchant:
+    data = payload.model_dump()
 
-    if len(data.get("mcc_code", "")) != 4:
-        raise ValueError("MCC must be 4 digits")
+    try:
+        existing = (
+            supabase.table("merchants")
+            .select("id")
+            .eq("email", data["email"])
+            .execute()
+        )
 
-    if not data.get("email"):
-        raise ValueError("Email is required")
+        if existing.data:
+            raise ValueError("Merchant with this email already exists")
+
+        response = supabase.table("merchants").insert(data).execute()
+
+        if getattr(response, "error", None):
+            logger.error(f"Supabase insert error: {response.error.message}")
+            raise Exception("Database insert failed")
+
+        if not response.data:
+            raise Exception("Insert returned empty response")
+
+        return Merchant(**response.data[0])
+
+    except ValueError:
+        # business rule error → pass upward
+        raise
+
+    except Exception as e:
+        logger.error(f"Error in create_merchant: {str(e)}")
+        raise
 
 
-    existing = (
-        supabase.table("merchants")
-        .select("id")
-        .eq("email", data["email"])
-        .execute()
-    )
+def get_merchants() -> list[Merchant]:
+    try:
+        response = supabase.table("merchants").select("*").execute()
 
-    if existing.data:
-        raise ValueError("Merchant with this email already exists")
+        if getattr(response, "error", None):
+            logger.error(f"Supabase fetch error: {response.error.message}")
+            raise Exception("Database fetch failed")
 
+        return [Merchant(**item) for item in response.data]
 
-    response = supabase.table("merchants").insert(data).execute()
-
-    
-    if getattr(response, "error", None):
-        raise Exception(response.error.message)
-
-    if not response.data:
-        raise Exception("Failed to insert merchant")
-
-    return response.data[0]
-
-
-def get_merchants():
-    response = supabase.table("merchants").select("*").execute()
-
-    if getattr(response, "error", None):
-        raise Exception(response.error.message)
-
-    return response.data
+    except Exception as e:
+        logger.error(f"Error in get_merchants: {str(e)}")
+        raise

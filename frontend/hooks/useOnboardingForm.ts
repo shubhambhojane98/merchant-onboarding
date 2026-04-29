@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import type { FormData, FormErrors } from "@/types/onboarding";
 
 export function useOnboardingForm() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     business_name: "",
     business_type: "",
     mcc_code: "",
@@ -14,50 +15,59 @@ export function useOnboardingForm() {
     phone: "",
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const update = (data: Partial<typeof formData>) => {
-    setFormData((prev) => ({ ...prev, ...data }));
+  const update = <K extends keyof FormData>(key: K, value: FormData[K]) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
 
-    const field = Object.keys(data)[0];
-    setErrors((prev: any) => {
+    setErrors((prev) => {
       const newErrors = { ...prev };
-      delete newErrors[field];
+      delete newErrors[key];
       return newErrors;
     });
   };
 
   const validateStep1 = () => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
 
-    if (!formData.business_name)
-      newErrors.business_name = "This Field is Required";
-    if (!formData.business_type)
-      newErrors.business_type = "This Field is Required";
+    if (!formData.business_name.trim()) {
+      newErrors.business_name = "This field is required";
+    } else if (formData.business_name.trim().length < 2) {
+      newErrors.business_name = "Must be at least 2 characters";
+    }
 
-    if (!formData.mcc_code) newErrors.mcc_code = "This Field is Required";
-    else if (!/^\d{4}$/.test(formData.mcc_code))
+    if (!formData.business_type) {
+      newErrors.business_type = "This field is required";
+    }
+
+    if (!formData.mcc_code) {
+      newErrors.mcc_code = "This field is required";
+    } else if (!/^\d{4}$/.test(formData.mcc_code)) {
       newErrors.mcc_code = "Must be 4 digits";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
 
-    if (!formData.full_name) {
-      newErrors.full_name = "This Field is Required";
-    } else if (formData.full_name.trim().length < 3) {
-      newErrors.full_name = "Must be at least 3 characters";
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = "This field is required";
+    } else if (formData.full_name.trim().length < 2) {
+      newErrors.full_name = "Must be at least 2 characters";
     }
 
-    if (!formData.email) newErrors.email = "This Field is Required";
-    else if (!/^\S+@\S+\.\S+$/.test(formData.email))
+    if (!formData.email) {
+      newErrors.email = "This field is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = "Invalid email";
+    }
 
-    if (!formData.phone || !isValidPhoneNumber(formData.phone))
-      newErrors.phone = "Invalid phone";
+    if (!formData.phone || !isValidPhoneNumber(formData.phone)) {
+      newErrors.phone = "Invalid phone number";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

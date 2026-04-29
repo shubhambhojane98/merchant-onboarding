@@ -1,4 +1,13 @@
-export default function Step3({ formData, back, submit, loading }: any) {
+import type { FormData } from "@/types/onboarding";
+
+type Props = {
+  formData: FormData;
+  back: () => void;
+  submit: () => void;
+  loading: boolean;
+};
+
+export default function Step3({ formData, back, submit, loading }: Props) {
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold">Review Details</h2>

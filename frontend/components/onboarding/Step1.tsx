@@ -1,18 +1,27 @@
-export default function Step1({ formData, update, errors, next }: any) {
+import type { FormData } from "@/types/onboarding";
+
+type Props = {
+  formData: FormData;
+  update: (key: keyof FormData, value: string) => void;
+  errors: Partial<Record<keyof FormData, string>>;
+  next: () => void;
+};
+
+export default function Step1({ formData, update, errors, next }: Props) {
   return (
     <div className="space-y-4">
       <input
         className="input"
         placeholder="Business Name"
         value={formData.business_name}
-        onChange={(e) => update({ business_name: e.target.value })}
+        onChange={(e) => update("business_name", e.target.value)}
       />
       {errors.business_name && <p className="error">{errors.business_name}</p>}
 
       <select
         className="input"
         value={formData.business_type}
-        onChange={(e) => update({ business_type: e.target.value })}
+        onChange={(e) => update("business_type", e.target.value)}
       >
         <option value="">Select Business Type</option>
         <option value="sole_trader">Sole Trader</option>
@@ -27,7 +36,7 @@ export default function Step1({ formData, update, errors, next }: any) {
         maxLength={4}
         inputMode="numeric"
         value={formData.mcc_code}
-        onChange={(e) => update({ mcc_code: e.target.value })}
+        onChange={(e) => update("mcc_code", e.target.value)}
       />
       {errors.mcc_code && <p className="error">{errors.mcc_code}</p>}
 

@@ -2,18 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { getMerchants } from "@/lib/api";
+import type { Merchant } from "@/types/merchant";
 import Link from "next/link";
 import MerchantList from "@/components/merchants/MerchantList";
+import { toast } from "sonner";
 
 export default function MerchantsPage() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Merchant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMerchants = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await getMerchants();
+      setData(res);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load merchants";
+
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    getMerchants()
-      .then(setData)
-      .finally(() => setLoading(false));
+    fetchMerchants();
   }, []);
+
+  const isEmpty = !loading && !error && data.length === 0;
+  const isSuccess = !loading && !error && data.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -44,7 +66,21 @@ export default function MerchantsPage() {
           </div>
         )}
 
-        {!loading && data.length === 0 && (
+        {!loading && error && (
+          <div className="text-center bg-white p-10 rounded-xl shadow">
+            <p className="text-red-500 mb-4">{error}</p>
+
+            <button
+              onClick={fetchMerchants}
+              disabled={loading}
+              className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+            >
+              🔄 Retry
+            </button>
+          </div>
+        )}
+
+        {isEmpty && (
           <div className="text-center bg-white p-10 rounded-xl shadow">
             <p className="text-gray-500 mb-4">No merchants found.</p>
 
@@ -57,7 +93,7 @@ export default function MerchantsPage() {
           </div>
         )}
 
-        {!loading && data.length > 0 && <MerchantList data={data} />}
+        {isSuccess && <MerchantList data={data} />}
       </div>
     </div>
   );
